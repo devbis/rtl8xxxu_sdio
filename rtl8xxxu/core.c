@@ -18,7 +18,9 @@
 #include "regs.h"
 #include "rtl8xxxu.h"
 
-#define DRIVER_NAME "rtl8xxxu"
+#define DRIVER_NAME "rtl8xxxs"
+
+#define SDIO_VENDOR_ID_REALTEK 0x024c
 
 int rtl8xxxu_debug;
 static bool rtl8xxxu_ht40_2g;
@@ -43,6 +45,8 @@ MODULE_FIRMWARE("rtlwifi/rtl8188fufw.bin");
 MODULE_FIRMWARE("rtlwifi/rtl8710bufw_SMIC.bin");
 MODULE_FIRMWARE("rtlwifi/rtl8710bufw_UMC.bin");
 MODULE_FIRMWARE("rtlwifi/rtl8192fufw.bin");
+MODULE_FIRMWARE("rtlwifi/rtl8723bs_nic.bin");
+MODULE_FIRMWARE("rtlwifi/rtl8723bs_bt.bin");
 
 module_param_named(debug, rtl8xxxu_debug, int, 0600);
 MODULE_PARM_DESC(debug, "Set debug mask");
@@ -747,7 +751,7 @@ u8 rtl8xxxu_read8(struct rtl8xxxu_priv *priv, u32 addr2)
 	bool claim_needed;
 	u32 data;
 	u32 addr;
-	
+
 	addr = _cvrt2ftaddr(addr2, NULL, NULL);
 	claim_needed = rtl8xxxu_sdio_claim_host_needed(func);
 
@@ -774,7 +778,7 @@ u16 rtl8xxxu_read16(struct rtl8xxxu_priv *priv, u32 addr2)
 	u16 ret;
 
 	addr = _cvrt2ftaddr(addr2, &device_id, &offset);
-	
+
 	claim_needed = rtl8xxxu_sdio_claim_host_needed(func);
 
 	if (claim_needed)
@@ -815,7 +819,7 @@ u32 rtl8xxxu_read32(struct rtl8xxxu_priv *priv, u32 addr2)
 	u32 ret;
 
 	addr = _cvrt2ftaddr(addr2, &device_id, &offset);
-	
+
 	claim_needed = rtl8xxxu_sdio_claim_host_needed(func);
 
 	if (claim_needed)
@@ -850,7 +854,7 @@ int rtl8xxxu_write8(struct rtl8xxxu_priv *priv, u32 addr2, u8 val)
 	int err;
 	bool claim_needed;
 	u32 addr;
-	
+
 	addr = _cvrt2ftaddr(addr2, NULL, NULL);
 	claim_needed = rtl8xxxu_sdio_claim_host_needed(func);
 
@@ -879,7 +883,7 @@ int rtl8xxxu_write16(struct rtl8xxxu_priv *priv, u32 addr2, u16 val)
 
 	if (claim_needed)
 		sdio_claim_host(func);
-	
+
 	if (rtl8xxxu_need_cmd52(priv, device_id, offset)) {
 		*(__le32 *)buf = cpu_to_le16(val);
 		for (i = 0; i < 2; i++) {
@@ -915,7 +919,7 @@ int rtl8xxxu_write32(struct rtl8xxxu_priv *priv, u32 addr2, u32 val)
 
 	if (claim_needed)
 		sdio_claim_host(func);
-	
+
 	if (rtl8xxxu_need_cmd52(priv, device_id, offset)) {
 		*(__le32 *)buf = cpu_to_le32(val);
 		for (i = 0; i < 4; i++) {
@@ -8249,8 +8253,10 @@ static void rtl8xxxu_disconnect(struct sdio_func *sdio_func)
 }
 
 static const struct sdio_device_id dev_table[] = {
-	{ SDIO_DEVICE(0x024c, 0x818B),
+	{ SDIO_DEVICE(SDIO_VENDOR_ID_REALTEK, 0x818B),
 	.driver_data = (kernel_ulong_t)&rtl8192eu_fops},
+	{ SDIO_DEVICE(SDIO_VENDOR_ID_REALTEK, 0xb723),
+	.driver_data = (unsigned long)&rtl8723bu_fops },
 	{ },
 };
 

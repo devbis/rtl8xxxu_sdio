@@ -383,7 +383,7 @@ enum rtl8188e_tx_rpt_timing {
 
 static int rtl8188eu_identify_chip(struct rtl8xxxu_priv *priv)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u32 sys_cfg, vendor;
 	int ret = 0;
 
@@ -740,7 +740,7 @@ static int rtl8188eu_rx_iqk_path_a(struct rtl8xxxu_priv *priv)
 	    ((reg_eac & 0x03ff0000) != 0x00360000))
 		result |= 0x02;
 	else
-		dev_warn(&priv->udev->dev, "%s: Path A RX IQK failed!\n",
+		dev_warn(&priv->func->dev, "%s: Path A RX IQK failed!\n",
 			 __func__);
 
 out:
@@ -750,7 +750,7 @@ out:
 static void rtl8188eu_phy_iqcalibrate(struct rtl8xxxu_priv *priv,
 				      int result[][8], int t)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u32 i, val32;
 	int path_a_ok;
 	int retry = 2;
@@ -905,7 +905,7 @@ static void rtl8188eu_phy_iqcalibrate(struct rtl8xxxu_priv *priv,
 
 static void rtl8188eu_phy_iq_calibrate(struct rtl8xxxu_priv *priv)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	int result[4][8];	/* last is final result */
 	int i, candidate;
 	bool path_a_ok;
@@ -1116,7 +1116,7 @@ static int rtl8188eu_emu_to_disabled(struct rtl8xxxu_priv *priv)
 
 static int rtl8188eu_active_to_lps(struct rtl8xxxu_priv *priv)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u8 val8;
 	u16 val16;
 	u32 val32;
@@ -1668,7 +1668,7 @@ void rtl8188e_handle_ra_tx_report2(struct rtl8xxxu_priv *priv, struct sk_buff *s
 {
 	u32 *_rx_desc = (u32 *)(skb->data - sizeof(struct rtl8xxxu_rxdesc16));
 	struct rtl8xxxu_rxdesc16 *rx_desc = (struct rtl8xxxu_rxdesc16 *)_rx_desc;
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	struct rtl8xxxu_ra_info *ra = &priv->ra_info;
 	u32 tx_rpt_len = rx_desc->pktlen & 0x3ff;
 	u32 items = tx_rpt_len / TX_RPT2_ITEM_SIZE;

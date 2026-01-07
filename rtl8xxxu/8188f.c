@@ -307,7 +307,7 @@ static const struct rtl8xxxu_rfregval rtl8188fu_cut_b_radioa_init_table[] = {
 
 static int rtl8188fu_identify_chip(struct rtl8xxxu_priv *priv)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u32 sys_cfg, vendor;
 	int ret = 0;
 
@@ -819,7 +819,7 @@ void rtl8188f_phy_lc_calibrate(struct rtl8xxxu_priv *priv)
 	}
 
 	if (i == 100)
-		dev_warn(&priv->udev->dev, "LC calibration timed out.\n");
+		dev_warn(&priv->func->dev, "LC calibration timed out.\n");
 
 	rtl8xxxu_write_rfreg(priv, RF_A, RF6052_REG_MODE_AG, rf_amode);
 
@@ -1061,7 +1061,7 @@ out:
 static void rtl8188fu_phy_iqcalibrate(struct rtl8xxxu_priv *priv,
 				      int result[][8], int t)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u32 i, val32, rx_initial_gain, lok_result;
 	u32 path_sel_bb, path_sel_rf;
 	int path_a_ok;
@@ -1217,7 +1217,7 @@ static void rtl8188fu_phy_iqcalibrate(struct rtl8xxxu_priv *priv,
 
 static void rtl8188fu_phy_iq_calibrate(struct rtl8xxxu_priv *priv)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	int result[4][8]; /* last is final result */
 	int i, candidate;
 	bool path_a_ok;
@@ -1450,7 +1450,7 @@ static int rtl8188fu_emu_to_disabled(struct rtl8xxxu_priv *priv)
 
 static int rtl8188fu_active_to_lps(struct rtl8xxxu_priv *priv)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u8 val8;
 	u16 val16;
 	u32 val32;
@@ -1657,7 +1657,7 @@ void rtl8188f_set_crystal_cap(struct rtl8xxxu_priv *priv, u8 crystal_cap)
 
 	val32 = rtl8xxxu_read32(priv, REG_AFE_XTAL_CTRL);
 
-	dev_dbg(&priv->udev->dev,
+	dev_dbg(&priv->func->dev,
 	        "%s: Adjusting crystal cap from 0x%x (actually 0x%lx 0x%lx) to 0x%x\n",
 	        __func__,
 	        cfo->crystal_cap,

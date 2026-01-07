@@ -462,7 +462,7 @@ static const struct rtl8xxxu_rfregval rtl8710bu_qfn48m_s_radioa_init_table[] = {
 
 static u32 rtl8710b_indirect_read32(struct rtl8xxxu_priv *priv, u32 addr)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u32 val32, value = 0xffffffff;
 	u8 polling_count = 0xff;
 
@@ -497,7 +497,7 @@ static u32 rtl8710b_indirect_read32(struct rtl8xxxu_priv *priv, u32 addr)
 
 static void rtl8710b_indirect_write32(struct rtl8xxxu_priv *priv, u32 addr, u32 val)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u8 polling_count = 0xff;
 	u32 val32;
 
@@ -570,7 +570,7 @@ static int rtl8710b_read_efuse8(struct rtl8xxxu_priv *priv, u16 offset, u8 *data
 
 static int rtl8710bu_identify_chip(struct rtl8xxxu_priv *priv)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u32 cfg0, cfg2, vendor;
 	u8 package_type = 0x7; /* a nonsense value */
 
@@ -847,7 +847,7 @@ static void rtl8710bu_init_statistics(struct rtl8xxxu_priv *priv)
 
 static int rtl8710b_read_efuse(struct rtl8xxxu_priv *priv)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u8 val8, word_mask, header, extheader;
 	u16 efuse_addr, offset;
 	int i, ret = 0;
@@ -951,7 +951,7 @@ static int rtl8710bu_load_firmware(struct rtl8xxxu_priv *priv)
 	} else if (priv->vendor_umc) {
 		return rtl8xxxu_load_firmware(priv, "rtlwifi/rtl8710bufw_UMC.bin");
 	} else {
-		dev_err(&priv->udev->dev, "We have no suitable firmware for this chip.\n");
+		dev_err(&priv->func->dev, "We have no suitable firmware for this chip.\n");
 		return -1;
 	}
 }
@@ -1254,7 +1254,7 @@ static int rtl8710bu_rx_iqk_path_a(struct rtl8xxxu_priv *priv, u32 lok_result)
 static void rtl8710bu_phy_iqcalibrate(struct rtl8xxxu_priv *priv,
 				      int result[][8], int t)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u32 i, val32, rx_initial_gain, lok_result;
 	u32 path_sel_bb, path_sel_rf;
 	int path_a_ok;
@@ -1405,7 +1405,7 @@ static void rtl8710bu_phy_iqcalibrate(struct rtl8xxxu_priv *priv,
 
 static void rtl8710bu_phy_iq_calibrate(struct rtl8xxxu_priv *priv)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	int result[4][8]; /* last is final result */
 	int i, candidate;
 	bool path_a_ok;
@@ -1550,7 +1550,7 @@ static int rtl8710bu_active_to_emu(struct rtl8xxxu_priv *priv)
 
 static int rtl8710bu_active_to_lps(struct rtl8xxxu_priv *priv)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u8 val8;
 	u16 val16;
 	u32 val32;
@@ -1768,7 +1768,7 @@ static void rtl8710b_set_crystal_cap(struct rtl8xxxu_priv *priv, u8 crystal_cap)
 
 	val32 = rtl8710b_read_syson_reg(priv, REG_SYS_XTAL_CTRL0_8710B);
 
-	dev_dbg(&priv->udev->dev,
+	dev_dbg(&priv->func->dev,
 		"%s: Adjusting crystal cap from 0x%x (actually 0x%x 0x%x) to 0x%x\n",
 		__func__,
 		cfo->crystal_cap,

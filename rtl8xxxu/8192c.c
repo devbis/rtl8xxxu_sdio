@@ -338,7 +338,7 @@ static const struct rtl8xxxu_rfregval rtl8188ru_radioa_1t_highpa_table[] = {
 
 static int rtl8192cu_identify_chip(struct rtl8xxxu_priv *priv)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u32 val32, bonding, sys_cfg, vendor;
 	int ret = 0;
 

@@ -391,7 +391,7 @@ static const struct rtl8xxxu_rfregval rtl8192fu_radiob_init_table[] = {
 
 static int rtl8192fu_identify_chip(struct rtl8xxxu_priv *priv)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u32 sys_cfg, vendor, val32;
 
 	strscpy(priv->chip_name, "8192FU", sizeof(priv->chip_name));
@@ -731,7 +731,7 @@ static int rtl8192fu_parse_efuse(struct rtl8xxxu_priv *priv)
 	priv->rfe_type = efuse->rfe_option & 0x1f;
 
 	if (priv->rfe_type != 5 && priv->rfe_type != 1)
-		dev_warn(&priv->udev->dev,
+		dev_warn(&priv->func->dev,
 			 "%s: RFE type %d was not tested. Please send an email to linux-wireless@vger.kernel.org about this.\n",
 			 __func__, priv->rfe_type);
 
@@ -1109,7 +1109,7 @@ static int rtl8192fu_iqk_path_b(struct rtl8xxxu_priv *priv)
 	    ((reg_ebc & 0x03ff0000) != 0x00420000))
 		result |= 0x01;
 	else
-		dev_warn(&priv->udev->dev, "%s: Path B IQK failed!\n",
+		dev_warn(&priv->func->dev, "%s: Path B IQK failed!\n",
 			 __func__);
 
 	return result;
@@ -1246,7 +1246,7 @@ static int rtl8192fu_rx_iqk_path_b(struct rtl8xxxu_priv *priv)
 	    ((reg_ecc & 0x03ff0000) != 0x00360000))
 		result |= 0x02;
 	else
-		dev_warn(&priv->udev->dev, "%s: Path B RX IQK failed!\n",
+		dev_warn(&priv->func->dev, "%s: Path B RX IQK failed!\n",
 			 __func__);
 
 	return result;
@@ -1269,7 +1269,7 @@ static void rtl8192fu_phy_iqcalibrate(struct rtl8xxxu_priv *priv,
 		REG_RFE_CTRL_ANT_SRC2, REG_CCK0_AFE_SETTING
 	};
 	u32 rx_initial_gain_a, rx_initial_gain_b;
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	int path_a_ok, path_b_ok;
 	u8 rfe = priv->rfe_type;
 	int retry = 2;
@@ -1442,7 +1442,7 @@ static void rtl8192fu_phy_iq_calibrate(struct rtl8xxxu_priv *priv)
 {
 	s32 reg_e94, reg_e9c, reg_ea4, reg_eac;
 	s32 reg_eb4, reg_ebc, reg_ec4, reg_ecc;
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u32 path_a_0xdf, path_a_0x35;
 	u32 path_b_0xdf, path_b_0x35;
 	bool path_a_ok, path_b_ok;
@@ -1783,7 +1783,7 @@ static int rtl8192fu_emu_to_disabled(struct rtl8xxxu_priv *priv)
 
 static int rtl8192fu_active_to_lps(struct rtl8xxxu_priv *priv)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u16 val16;
 	u32 val32;
 	int retry;
@@ -1948,7 +1948,7 @@ static void rtl8192f_set_crystal_cap(struct rtl8xxxu_priv *priv, u8 crystal_cap)
 	xtal1 = rtl8xxxu_read32(priv, REG_AFE_PLL_CTRL);
 	xtal0 = rtl8xxxu_read32(priv, REG_AFE_XTAL_CTRL);
 
-	dev_dbg(&priv->udev->dev,
+	dev_dbg(&priv->func->dev,
 		"%s: Adjusting crystal cap from 0x%x (actually 0x%x 0x%x) to 0x%x\n",
 		__func__,
 		cfo->crystal_cap,

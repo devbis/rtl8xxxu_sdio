@@ -8,6 +8,9 @@
 #include <linux/average.h>
 #include <linux/usb.h>
 #include <net/mac80211.h>
+#include <linux/mmc/sdio.h>
+#include <linux/mmc/sdio_func.h>
+#include <linux/mmc/sdio_ids.h>
 
 #define RTL8XXXU_DEBUG_REG_WRITE	0x01
 #define RTL8XXXU_DEBUG_REG_READ		0x02
@@ -1789,21 +1792,28 @@ struct rtl8xxxu_cfo_tracking {
 #define RTL8XXXU_BC_MC_MACID1	1
 #define RTL8XXXU_MAX_SEC_CAM_NUM	64
 
+struct rtl8xxxu_sdio_tx_data {
+	u8 sn;
+};
+
 struct rtl8xxxu_priv {
 	struct ieee80211_hw *hw;
-	struct usb_device *udev;
+	struct sdio_func *func;
 	struct rtl8xxxu_fileops *fops;
+	u32 block_transfer_length;
 
 	spinlock_t tx_urb_lock;
-	struct list_head tx_urb_free_list;
-	int tx_urb_free_count;
 	bool tx_stopped;
+	struct workqueue_struct *txwq;
+	struct work_struct tx_work;
+	struct sk_buff_head tx_queue[TXDESC_QUEUE_MAX];
 
 	spinlock_t rx_urb_lock;
 	struct list_head rx_urb_pending_list;
 	int rx_urb_pending_count;
 	bool shutdown;
 	struct work_struct rx_urb_wq;
+	u8 rx_addr;
 
 	u8 mac_addr[ETH_ALEN];
 	char chip_name[8];
@@ -1853,9 +1863,6 @@ struct rtl8xxxu_priv {
 	u32 cck_new_agc:1;
 	u8 default_crystal_cap;
 	u8 rfe_type;
-	unsigned int pipe_interrupt;
-	unsigned int pipe_in;
-	unsigned int pipe_out[TXDESC_QUEUE_MAX];
 	u8 out_ep[RTL8XXXU_OUT_ENDPOINTS];
 	u8 ep_tx_count;
 	u8 rf_paths;
@@ -2033,19 +2040,19 @@ struct rtl8xxxu_fileops {
 extern int rtl8xxxu_debug;
 
 extern const u32 rtl8xxxu_iqk_phy_iq_bb_reg[];
-u8 rtl8xxxu_read8(struct rtl8xxxu_priv *priv, u16 addr);
-u16 rtl8xxxu_read16(struct rtl8xxxu_priv *priv, u16 addr);
-u32 rtl8xxxu_read32(struct rtl8xxxu_priv *priv, u16 addr);
-int rtl8xxxu_write8(struct rtl8xxxu_priv *priv, u16 addr, u8 val);
-int rtl8xxxu_write16(struct rtl8xxxu_priv *priv, u16 addr, u16 val);
-int rtl8xxxu_write32(struct rtl8xxxu_priv *priv, u16 addr, u32 val);
-int rtl8xxxu_write8_set(struct rtl8xxxu_priv *priv, u16 addr, u8 bits);
-int rtl8xxxu_write8_clear(struct rtl8xxxu_priv *priv, u16 addr, u8 bits);
-int rtl8xxxu_write16_set(struct rtl8xxxu_priv *priv, u16 addr, u16 bits);
-int rtl8xxxu_write16_clear(struct rtl8xxxu_priv *priv, u16 addr, u16 bits);
-int rtl8xxxu_write32_set(struct rtl8xxxu_priv *priv, u16 addr, u32 bits);
-int rtl8xxxu_write32_clear(struct rtl8xxxu_priv *priv, u16 addr, u32 bits);
-int rtl8xxxu_write32_mask(struct rtl8xxxu_priv *priv, u16 addr,
+u8 rtl8xxxu_read8(struct rtl8xxxu_priv *priv, u32 addr);
+u16 rtl8xxxu_read16(struct rtl8xxxu_priv *priv, u32 addr);
+u32 rtl8xxxu_read32(struct rtl8xxxu_priv *priv, u32 addr);
+int rtl8xxxu_write8(struct rtl8xxxu_priv *priv, u32 addr, u8 val);
+int rtl8xxxu_write16(struct rtl8xxxu_priv *priv, u32 addr, u16 val);
+int rtl8xxxu_write32(struct rtl8xxxu_priv *priv, u32 addr, u32 val);
+int rtl8xxxu_write8_set(struct rtl8xxxu_priv *priv, u32 addr, u8 bits);
+int rtl8xxxu_write8_clear(struct rtl8xxxu_priv *priv, u32 addr, u8 bits);
+int rtl8xxxu_write16_set(struct rtl8xxxu_priv *priv, u32 addr, u16 bits);
+int rtl8xxxu_write16_clear(struct rtl8xxxu_priv *priv, u32 addr, u16 bits);
+int rtl8xxxu_write32_set(struct rtl8xxxu_priv *priv, u32 addr, u32 bits);
+int rtl8xxxu_write32_clear(struct rtl8xxxu_priv *priv, u32 addr, u32 bits);
+int rtl8xxxu_write32_mask(struct rtl8xxxu_priv *priv, u32 addr,
 			  u32 mask, u32 val);
 
 u32 rtl8xxxu_read_rfreg(struct rtl8xxxu_priv *priv,

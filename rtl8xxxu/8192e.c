@@ -464,7 +464,7 @@ static const struct rtl8xxxu_rfregval rtl8192eu_radiob_init_table[] = {
 
 static int rtl8192eu_identify_chip(struct rtl8xxxu_priv *priv)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u32 val32, bonding, sys_cfg, vendor;
 	int ret = 0;
 
@@ -860,7 +860,7 @@ static int rtl8192eu_rx_iqk_path_a(struct rtl8xxxu_priv *priv)
 	    ((reg_eac & 0x03ff0000) != 0x00360000))
 		result |= 0x02;
 	else
-		dev_warn(&priv->udev->dev, "%s: Path A RX IQK failed!\n",
+		dev_warn(&priv->func->dev, "%s: Path A RX IQK failed!\n",
 			 __func__);
 
 out:
@@ -910,7 +910,7 @@ static int rtl8192eu_iqk_path_b(struct rtl8xxxu_priv *priv)
 	    ((reg_ebc & 0x03ff0000) != 0x00420000))
 		result |= 0x01;
 	else
-		dev_warn(&priv->udev->dev, "%s: Path B IQK failed!\n",
+		dev_warn(&priv->func->dev, "%s: Path B IQK failed!\n",
 			 __func__);
 
 	return result;
@@ -1040,7 +1040,7 @@ static int rtl8192eu_rx_iqk_path_b(struct rtl8xxxu_priv *priv)
 	    ((reg_ecc & 0x03ff0000) != 0x00360000))
 		result |= 0x02;
 	else
-		dev_warn(&priv->udev->dev, "%s: Path B RX IQK failed!\n",
+		dev_warn(&priv->func->dev, "%s: Path B RX IQK failed!\n",
 			 __func__);
 
 out:
@@ -1050,7 +1050,7 @@ out:
 static void rtl8192eu_phy_iqcalibrate(struct rtl8xxxu_priv *priv,
 				      int result[][8], int t)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u32 i, val32;
 	int path_a_ok, path_b_ok;
 	int retry = 2;
@@ -1235,7 +1235,7 @@ static void rtl8192eu_phy_iqcalibrate(struct rtl8xxxu_priv *priv,
 
 static void rtl8192eu_phy_iq_calibrate(struct rtl8xxxu_priv *priv)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	int result[4][8];	/* last is final result */
 	int i, candidate;
 	bool path_a_ok, path_b_ok;
@@ -1436,7 +1436,7 @@ exit:
 
 static int rtl8192eu_active_to_lps(struct rtl8xxxu_priv *priv)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u8 val8;
 	u16 val16;
 	u32 val32;
@@ -1521,7 +1521,7 @@ static int rtl8192eu_active_to_emu(struct rtl8xxxu_priv *priv)
 	}
 
 	if (!count) {
-		dev_warn(&priv->udev->dev, "%s: Disabling MAC timed out\n",
+		dev_warn(&priv->func->dev, "%s: Disabling MAC timed out\n",
 			 __func__);
 		ret = -EBUSY;
 		goto exit;

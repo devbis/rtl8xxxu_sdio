@@ -140,7 +140,7 @@ static const struct rtl8xxxu_rfregval rtl8723au_radioa_1t_init_table[] = {
 
 static int rtl8723au_identify_chip(struct rtl8xxxu_priv *priv)
 {
-	struct device *dev = &priv->udev->dev;
+	struct device *dev = &priv->func->dev;
 	u32 val32, sys_cfg, vendor;
 	int ret = 0;
 
@@ -424,7 +424,7 @@ void rtl8723a_set_crystal_cap(struct rtl8xxxu_priv *priv, u8 crystal_cap)
 
 	val32 = rtl8xxxu_read32(priv, REG_MAC_PHY_CTRL);
 
-	dev_dbg(&priv->udev->dev,
+	dev_dbg(&priv->func->dev,
 	        "%s: Adjusting crystal cap from 0x%x (actually 0x%lx 0x%lx) to 0x%x\n",
 	        __func__,
 	        cfo->crystal_cap,

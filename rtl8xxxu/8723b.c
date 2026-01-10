@@ -481,6 +481,63 @@ static int rtl8723bu_parse_efuse(struct rtl8xxxu_priv *priv)
 	return 0;
 }
 
+static int rtl8723bs_parse_efuse(struct rtl8xxxu_priv *priv)
+{
+	struct rtl8723bs_efuse *efuse = &priv->efuse_wifi.efuse8723bs;
+	int i;
+
+	if (efuse->rtl_id != cpu_to_le16(0x8129))
+		return -EINVAL;
+
+	ether_addr_copy(priv->mac_addr, efuse->mac_addr);
+
+	memcpy(priv->cck_tx_power_index_A, efuse->tx_power_index_A.cck_base,
+	       sizeof(efuse->tx_power_index_A.cck_base));
+	memcpy(priv->cck_tx_power_index_B, efuse->tx_power_index_B.cck_base,
+	       sizeof(efuse->tx_power_index_B.cck_base));
+
+	memcpy(priv->ht40_1s_tx_power_index_A,
+	       efuse->tx_power_index_A.ht40_base,
+	       sizeof(efuse->tx_power_index_A.ht40_base));
+	memcpy(priv->ht40_1s_tx_power_index_B,
+	       efuse->tx_power_index_B.ht40_base,
+	       sizeof(efuse->tx_power_index_B.ht40_base));
+
+	priv->ofdm_tx_power_diff[0].a =
+		efuse->tx_power_index_A.ht20_ofdm_1s_diff.a;
+	priv->ofdm_tx_power_diff[0].b =
+		efuse->tx_power_index_B.ht20_ofdm_1s_diff.a;
+
+	priv->ht20_tx_power_diff[0].a =
+		efuse->tx_power_index_A.ht20_ofdm_1s_diff.b;
+	priv->ht20_tx_power_diff[0].b =
+		efuse->tx_power_index_B.ht20_ofdm_1s_diff.b;
+
+	priv->ht40_tx_power_diff[0].a = 0;
+	priv->ht40_tx_power_diff[0].b = 0;
+
+	for (i = 1; i < RTL8723B_TX_COUNT; i++) {
+		priv->ofdm_tx_power_diff[i].a =
+			efuse->tx_power_index_A.pwr_diff[i - 1].ofdm;
+		priv->ofdm_tx_power_diff[i].b =
+			efuse->tx_power_index_B.pwr_diff[i - 1].ofdm;
+
+		priv->ht20_tx_power_diff[i].a =
+			efuse->tx_power_index_A.pwr_diff[i - 1].ht20;
+		priv->ht20_tx_power_diff[i].b =
+			efuse->tx_power_index_B.pwr_diff[i - 1].ht20;
+
+		priv->ht40_tx_power_diff[i].a =
+			efuse->tx_power_index_A.pwr_diff[i - 1].ht40;
+		priv->ht40_tx_power_diff[i].b =
+			efuse->tx_power_index_B.pwr_diff[i - 1].ht40;
+	}
+
+	priv->default_crystal_cap = priv->efuse_wifi.efuse8723bs.xtal_k & 0x3f;
+
+	return 0;
+}
+
 static int rtl8723bu_load_firmware(struct rtl8xxxu_priv *priv)
 {
 	const char *fw_name;
@@ -1710,6 +1767,65 @@ static int rtl8723bu_led_brightness_set(struct led_classdev *led_cdev,
 struct rtl8xxxu_fileops rtl8723bu_fops = {
 	.identify_chip = rtl8723bu_identify_chip,
 	.parse_efuse = rtl8723bu_parse_efuse,
+	.load_firmware = rtl8723bu_load_firmware,
+	.power_on = rtl8723bu_power_on,
+	.power_off = rtl8723bu_power_off,
+	.read_efuse = rtl8xxxu_read_efuse,
+	.reset_8051 = rtl8723bu_reset_8051,
+	.llt_init = rtl8xxxu_auto_llt_table,
+	.init_phy_bb = rtl8723bu_init_phy_bb,
+	.init_phy_rf = rtl8723bu_init_phy_rf,
+	.phy_init_antenna_selection = rtl8723bu_phy_init_antenna_selection,
+	.phy_lc_calibrate = rtl8723a_phy_lc_calibrate,
+	.phy_iq_calibrate = rtl8723bu_phy_iq_calibrate,
+	.config_channel = rtl8xxxu_gen2_config_channel,
+	.parse_rx_desc = rtl8xxxu_parse_rxdesc24,
+	.parse_phystats = rtl8723au_rx_parse_phystats,
+	.init_aggregation = rtl8723bu_init_aggregation,
+	.init_statistics = rtl8723bu_init_statistics,
+	.init_burst = rtl8xxxu_init_burst,
+	.enable_rf = rtl8723b_enable_rf,
+	.disable_rf = rtl8xxxu_gen2_disable_rf,
+	.usb_quirks = rtl8xxxu_gen2_usb_quirks,
+	.set_tx_power = rtl8723b_set_tx_power,
+	.update_rate_mask = rtl8xxxu_gen2_update_rate_mask,
+	.report_connect = rtl8xxxu_gen2_report_connect,
+	.report_rssi = rtl8xxxu_gen2_report_rssi,
+	.fill_txdesc = rtl8xxxu_fill_txdesc_v2,
+	.set_crystal_cap = rtl8723a_set_crystal_cap,
+	.cck_rssi = rtl8723b_cck_rssi,
+	.led_classdev_brightness_set = rtl8723bu_led_brightness_set,
+	.writeN_block_size = 1024,
+	.tx_desc_size = sizeof(struct rtl8xxxu_txdesc40),
+	.rx_desc_size = sizeof(struct rtl8xxxu_rxdesc24),
+	.has_s0s1 = 1,
+	.has_tx_report = 1,
+	.gen2_thermal_meter = 1,
+	.needs_full_init = 1,
+	.init_reg_hmtfr = 1,
+	.ampdu_max_time = 0x5e,
+	.ustime_tsf_edca = 0x50,
+	.max_aggr_num = 0x0c14,
+	.supports_ap = 1,
+	.max_macid_num = 128,
+	.max_sec_cam_num = 64,
+	.adda_1t_init = 0x01c00014,
+	.adda_1t_path_on = 0x01c00014,
+	.adda_2t_path_on_a = 0x01c00014,
+	.adda_2t_path_on_b = 0x01c00014,
+	.trxff_boundary = 0x3f7f,
+	.pbp_rx = PBP_PAGE_SIZE_256,
+	.pbp_tx = PBP_PAGE_SIZE_256,
+	.mactable = rtl8723b_mac_init_table,
+	.total_page_num = TX_TOTAL_PAGE_NUM_8723B,
+	.page_num_hi = TX_PAGE_NUM_HI_PQ_8723B,
+	.page_num_lo = TX_PAGE_NUM_LO_PQ_8723B,
+	.page_num_norm = TX_PAGE_NUM_NORM_PQ_8723B,
+};
+
+struct rtl8xxxu_fileops rtl8723bs_fops = {
+	.identify_chip = rtl8723bu_identify_chip,
+	.parse_efuse = rtl8723bs_parse_efuse,
 	.load_firmware = rtl8723bu_load_firmware,
 	.power_on = rtl8723bu_power_on,
 	.power_off = rtl8723bu_power_off,

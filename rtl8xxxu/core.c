@@ -8285,7 +8285,7 @@ static const struct sdio_device_id dev_table[] = {
 	{ SDIO_DEVICE(SDIO_VENDOR_ID_REALTEK, 0x818B),
 	.driver_data = (kernel_ulong_t)&rtl8192eu_fops},
 	{ SDIO_DEVICE(SDIO_VENDOR_ID_REALTEK, 0xb723),
-	.driver_data = (unsigned long)&rtl8723bu_fops },
+	.driver_data = (unsigned long)&rtl8723bs_fops },
 	{ },
 };
 

@@ -2090,6 +2090,7 @@ static void rtl8xxxu_dump_efuse(struct rtl8xxxu_priv *priv)
 		       priv->efuse_wifi.raw, EFUSE_MAP_LEN, true);
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0))
 static ssize_t read_file_efuse(struct file *file, char __user *user_buf,
 			       size_t count, loff_t *ppos)
 {
@@ -2110,6 +2111,7 @@ static void rtl8xxxu_debugfs_init(struct rtl8xxxu_priv *priv)
 	phydir = debugfs_create_dir("rtl8xxxu", priv->hw->wiphy->debugfsdir);
 	debugfs_create_file("efuse", 0400, phydir, priv, &fops_efuse);
 }
+#endif
 
 void rtl8xxxu_reset_8051(struct rtl8xxxu_priv *priv)
 {
@@ -4745,7 +4747,11 @@ static void rtl8xxxu_cam_write(struct rtl8xxxu_priv *priv,
 }
 
 static
-int rtl8xxxu_get_antenna(struct ieee80211_hw *hw, int radio_idx, u32 *tx_ant,
+int rtl8xxxu_get_antenna(struct ieee80211_hw *hw,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0))
+int radio_idx,
+#endif
+u32 *tx_ant,
 			 u32 *rx_ant)
 {
 	struct rtl8xxxu_priv *priv = hw->priv;
@@ -5886,8 +5892,16 @@ static void rtl8xxxu_update_beacon_work_callback(struct work_struct *work)
 	}
 
 	if (vif->bss_conf.csa_active) {
-		if (ieee80211_beacon_cntdwn_is_complete(vif, 0)) {
-			ieee80211_csa_finish(vif, 0);
+		if (ieee80211_beacon_cntdwn_is_complete(vif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0))
+, 0
+#endif
+)) {
+			ieee80211_csa_finish(vif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0))
+, 0
+#endif
+);
 			return;
 		}
 		schedule_delayed_work(&priv->update_beacon_work,
@@ -6953,7 +6967,11 @@ static void rtl8xxxu_remove_interface(struct ieee80211_hw *hw,
 	priv->vifs[rtlvif->port_num] = NULL;
 }
 
-static int rtl8xxxu_config(struct ieee80211_hw *hw, int radio_idx, u32 changed)
+static int rtl8xxxu_config(struct ieee80211_hw *hw,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0))
+int radio_idx,
+#endif
+u32 changed)
 {
 	struct rtl8xxxu_priv *priv = hw->priv;
 	struct device *dev = &priv->func->dev;
@@ -7102,7 +7120,10 @@ static void rtl8xxxu_configure_filter(struct ieee80211_hw *hw,
 			 FIF_PROBE_REQ);
 }
 
-static int rtl8xxxu_set_rts_threshold(struct ieee80211_hw *hw, int radio_idx,
+static int rtl8xxxu_set_rts_threshold(struct ieee80211_hw *hw,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0))
+ int radio_idx,
+#endif
 				      u32 rts)
 {
 	if (rts > 2347 && rts != (u32)-1)
@@ -7857,7 +7878,11 @@ error_out:
 	return ret;
 }
 
-static void rtl8xxxu_stop(struct ieee80211_hw *hw, bool suspend)
+static void rtl8xxxu_stop(struct ieee80211_hw *hw
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0))
+, bool suspend
+#endif
+)
 {
 	struct rtl8xxxu_priv *priv = hw->priv;
 	unsigned long flags;
@@ -7948,10 +7973,12 @@ static int rtl8xxxu_sta_remove(struct ieee80211_hw *hw,
 }
 
 static const struct ieee80211_ops rtl8xxxu_ops = {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0))
 	.add_chanctx = ieee80211_emulate_add_chanctx,
 	.remove_chanctx = ieee80211_emulate_remove_chanctx,
 	.change_chanctx = ieee80211_emulate_change_chanctx,
 	.switch_vif_chanctx = ieee80211_emulate_switch_vif_chanctx,
+#endif
 	.tx = rtl8xxxu_tx,
 	.wake_tx_queue = ieee80211_handle_wake_tx_queue,
 	.add_interface = rtl8xxxu_add_interface,
@@ -8208,7 +8235,9 @@ static int rtl8xxxu_probe(struct sdio_func *sdio_func,
 	}
 
 	rtl8xxxu_init_led(priv);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0))
 	rtl8xxxu_debugfs_init(priv);
+#endif
 
 	return 0;
 
